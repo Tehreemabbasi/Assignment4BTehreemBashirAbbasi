@@ -5,6 +5,7 @@ using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 
+
 /// <summary>
 /// A hummingbird Machine Learning Agent
 /// </summary>
@@ -80,6 +81,9 @@ public class HummingbirdAgent : Agent
             flowerArea.ResetFlowers();
         }
 
+        flowerArea.ResetFlowers();
+
+
         // Reset nectar obtained
         NectarObtained = 0f;
 
@@ -94,6 +98,12 @@ public class HummingbirdAgent : Agent
             // Spawn in front of flower 50% of the time during training
             inFrontOfFlower = UnityEngine.Random.value > .5f;
         }
+        else
+        {
+            FreezeAgent();
+            inFrontOfFlower = UnityEngine.Random.value > .5f;
+        }
+
 
         // Move the agent to a new random position
         MoveToSafeRandomPosition(inFrontOfFlower);
@@ -159,7 +169,7 @@ public class HummingbirdAgent : Agent
             sensor.AddObservation(new float[10]);
             return;
         }
-        
+
         // Observe the agent's local rotation (4 observations)
         sensor.AddObservation(transform.localRotation.normalized);
 
@@ -271,15 +281,23 @@ public class HummingbirdAgent : Agent
             if (inFrontOfFlower)
             {
                 // Pick a random flower
-                Flower randomFlower = flowerArea.Flowers[UnityEngine.Random.Range(0, flowerArea.Flowers.Count)];
+                try
+                {
+                    Flower randomFlower = flowerArea.Flowers[UnityEngine.Random.Range(0, flowerArea.Flowers.Count)];
 
-                // Position 10 to 20 cm in front of the flower
-                float distanceFromFlower = UnityEngine.Random.Range(.1f, .2f);
-                potentialPosition = randomFlower.transform.position + randomFlower.FlowerUpVector * distanceFromFlower;
+                    // Position 10 to 20 cm in front of the flower
+                    float distanceFromFlower = UnityEngine.Random.Range(.1f, .2f);
+                    potentialPosition = randomFlower.transform.position + randomFlower.FlowerUpVector * distanceFromFlower;
 
-                // Point beak at flower (bird's head is center of transform)
-                Vector3 toFlower = randomFlower.FlowerCenterPosition - potentialPosition;
-                potentialRotation = Quaternion.LookRotation(toFlower, Vector3.up);
+                    // Point beak at flower (bird's head is center of transform)
+                    Vector3 toFlower = randomFlower.FlowerCenterPosition - potentialPosition;
+                    potentialRotation = Quaternion.LookRotation(toFlower, Vector3.up);
+                }
+                catch (Exception e)
+                {
+                    e.ToString();
+
+                }
             }
             else
             {
